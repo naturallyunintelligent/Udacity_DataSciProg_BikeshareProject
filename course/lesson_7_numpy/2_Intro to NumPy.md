@@ -14,5 +14,5 @@ NumPy is a remarkable math library and it has many functions and features. In th
 NumPy Manual
 NumPy User Guide
 NumPy Reference
-Scipy Lectures
+* [1.4. NumPy: creating and manipulating numerical data — Scipy lecture notes](http://scipy-lectures.org/intro/numpy/index.html)
 
