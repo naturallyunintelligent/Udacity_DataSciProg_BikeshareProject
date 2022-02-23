@@ -4,8 +4,8 @@ filename = 'chicago.csv'
 
 # load data file into a dataframe
 df = pd.read_csv(filename)
-#print(df)
-# print(df.columns)
+print(df)
+print(df.columns)
 # print(df.index)
 # print(df.size)
 # print(df.ndim)
