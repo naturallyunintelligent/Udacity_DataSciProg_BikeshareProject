@@ -5,40 +5,13 @@ import datetime
 import pandas as pd
 import numpy as np
 
-# TODO: regex in user inputs
-# TODO: remove whitespace in user inputs
+from constants import DATAPATH
+from constants import  CITY_DATA
+from constants import MONTHNAMES
+from constants import WEEKDAYS
+
+# TODO: regex in user inputs &/or typos?
 # TODO: lookup Rich and Textual, re improving the terminal UI
-
-CITY_DATA = {
-    'chicago': 'chicago.csv',
-    'new york city': 'new_york_city.csv',
-    'washington': 'washington.csv'
-}
-
-WEEKDAYS = [
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday',
-    'Sunday',
-]
-
-MONTHNAMES = [
-        'January',
-        'February',
-        'March',
-        'April',
-        'May',
-        'June',
-        'July',
-        'August',
-        'September',
-        'October',
-        'November',
-        'December',
-]
 
 
 def greeting() -> None:
@@ -56,6 +29,21 @@ def greeting() -> None:
     print(f'{greeting_for_now}! Let\'s explore some US bikeshare data!')
     return None
 
+def tidy_input(user_input:str) -> str:
+    '''
+    Tidies the user's initial input:
+    :param user_input:
+    :return: user_input
+    '''
+    # remove whitespace
+    user_input = user_input.strip()
+    # all lowercase
+    user_input = user_input.lower()
+    # remove duplicated spaces (useful for new york city)
+    user_input = " ".join(user_input.split())
+
+    return user_input
+
 def get_city() -> str:
     """
     Takes input from the user to select a city for analysis
@@ -68,9 +56,7 @@ def get_city() -> str:
             city = str(input(f'\nWhich city would you like to analyse? '
                              f'Data currently available for {", ".join(str(city) for city in available_cities)}\n'
                              ))
-            city = city.lower()
-            # TODO: implement some regex to make handling typos more elegant & robust, must be able to find some existing examples?
-            # TODO: same for months and days, so maybe create a separate reusable typos function?
+            city = tidy_input(city)
             typos = {
                 "chicgo": "chicago",
                 "chiago": "chicago",
@@ -88,7 +74,6 @@ def get_city() -> str:
             print(f"Apologies, I didn't understand that. Data currently available for {available_cities,}")
             continue
         else:
-            # TODO: obtain min and max month & day from data to populate month and day filter prompts
             break
     return city
 
@@ -217,7 +202,7 @@ def load_data(user_filters):
     Returns:
         df - Pandas DataFrame containing city data filtered by month and day
     """
-    df = pd.read_csv(CITY_DATA[user_filters['city']])
+    df = pd.read_csv(DATAPATH + CITY_DATA[user_filters['city']])
     #print(type(df['Start Time'][0]))
     df['Start Time'] = pd.to_datetime(df['Start Time'])
     #print(type(df['Start Time'][0]))
