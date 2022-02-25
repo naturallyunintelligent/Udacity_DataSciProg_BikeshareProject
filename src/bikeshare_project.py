@@ -13,13 +13,11 @@ from constants import WEEKDAYS
 # TODO: regex in user inputs &/or typos?
 # TODO: lookup Rich and Textual, re improving the terminal UI
 
-
 def greeting() -> None:
     """
     Checks local time and prints a suitable greeting
     :return: None
     """
-
     if time.localtime().tm_hour < 12:
         greeting_for_now = "Good morning"
     elif time.localtime().tm_hour  < 18:
@@ -101,7 +99,6 @@ def get_month() -> (int, str):
                 chosen_month = chosen_month.strftime("%b").lower()
             if chosen_month in abb_monthnames:
                 chosen_month = datetime.datetime.strptime(chosen_month, "%b")
-
                 break
             elif chosen_month not in abb_monthnames:
                 print(
