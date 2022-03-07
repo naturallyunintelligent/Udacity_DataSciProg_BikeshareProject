@@ -6,12 +6,18 @@ import pandas as pd
 import numpy as np
 
 from constants import DATAPATH
-from constants import  CITY_DATA
+from constants import CITY_DATA
 from constants import MONTHNAMES
 from constants import WEEKDAYS
 
+# TODO: cahnge weekdays and months in constants to tuples
+
 # TODO: regex in user inputs &/or typos?
+# https://getpocket.com/read/2965365121
+# regex 101?
 # TODO: lookup Rich and Textual, re improving the terminal UI
+# https://github.com/Textualize/textual
+# https://rich.readthedocs.io/en/stable/introduction.html
 
 def greeting() -> None:
     """
@@ -61,11 +67,19 @@ def get_city() -> str:
                 "chicargo": "chicago",
                 "new york": "new york city",
                 "nyc": "new york city",
+                "newyorkcity": "new york city",
+                "newyork": "new york city",
+                "ny city": "new york city",
+                "nycity": "new york city",
             }
             if city in typos.keys():
-                print(f"City identified: {city} >>> {typos[city]}")
+                print(f"City identified: {city} >>> {typos[city].title()}")
                 city = typos[city]
             if city not in available_cities:
+                abb_cities = [name.lower()[:3] for name in available_cities]
+                if city in abb_cities:
+                    city = available_cities[abb_cities.index(city)]
+                    break
                 print(f"Apologies, data only currently available for {available_cities,}")
                 continue
         except ValueError:
@@ -73,9 +87,10 @@ def get_city() -> str:
             continue
         else:
             break
+    print(f"City selected: {city.title()}")
     return city
 
-def get_month() -> (int, str):
+def get_month(monthnames=MONTHNAMES) -> (int, str):
     """
     Takes input from the user to choose a month to analyse
     :return month_number: an integer to represent the calendar month
@@ -87,14 +102,13 @@ def get_month() -> (int, str):
             chosen_month = input('\nWhich month would you like to analyse?\n').lower()
             if type(chosen_month) != str:
                 print(
-                    'TypeError: Apologies, only strings handled, please enter a calendar month in English, e.g. January, '
-                    'February, March, April, May, June, July, September, October, November or December')
+                    'TypeError: Apologies, only strings handled, please enter an available calendar month in English, e.g. January')
                 continue
 
-            abb_monthnames = [name.lower()[:3] for name in MONTHNAMES]
+            abb_monthnames = [name.lower()[:3] for name in monthnames]
             # lowercase_monthnames = [name.lower() for name in MONTHNAMES]
 
-            if chosen_month in [name.lower() for name in MONTHNAMES]:
+            if chosen_month in [name.lower() for name in monthnames]:
                 chosen_month = datetime.datetime.strptime(chosen_month, "%B")
                 chosen_month = chosen_month.strftime("%b").lower()
             if chosen_month in abb_monthnames:
@@ -102,16 +116,13 @@ def get_month() -> (int, str):
                 break
             elif chosen_month not in abb_monthnames:
                 print(
-                    "Apologies, I didn't understand that please enter a calendar month in English, e.g. January, "
-                    "February, March, April, May, June, July, August, September, October, November or December")
+                    "Apologies, I didn't understand that please enter an available calendar month in English, e.g. January")
                 continue
         except TypeError:
-            print('TypeError: Apologies, numbers not handled, please enter a calendar month in English, e.g. January, '
-                  'February, March, April, May, June, July, August, September, October, November or December')
+            print('TypeError: Apologies, numbers not handled, please enter an available calendar month in English, e.g. January')
             continue
         except ValueError:
-            print('ValueError: Please enter a calendar month in English, e.g. January, '
-                  'February, March, April, May, June, July, August, September, October, November or December')
+            print('ValueError: Please enter an available calendar month in English, e.g. January')
             continue
         except KeyboardInterrupt:
             print("Keyboard Interrupt - no input taken")
@@ -121,6 +132,8 @@ def get_month() -> (int, str):
 
     month_number = chosen_month.month
     month_name = MONTHNAMES[month_number-1]
+
+    print(f"Month selected: {month_name.capitalize()}, (month number: {month_number})")
 
     return month_number, month_name
 
@@ -160,10 +173,10 @@ def get_day() -> (int, str):
     day_index = [day.lower()[:3] for day in WEEKDAYS].index(chosen_day[:3])
     day_number = day_index + 1
     day_name = WEEKDAYS[day_index]
-    print(f"Day selected: {day_name}, (weekday: {day_number})")
+    print(f"Day selected: {day_name.capitalize()}, (weekday: {day_number})")
     return day_number, day_name
 
-def get_filters():
+def get_filters() -> dict:
     """
     Asks user to specify a city, month, and day to analyze.
 
@@ -174,8 +187,33 @@ def get_filters():
     """
 
     city = get_city()
-    month_number, month_name = get_month()
-    day_number, day_name = get_day()
+
+    while True:
+        try:
+            chosen_filters = input('\nWould you like to filter by month, day or both?\n').lower()
+            if 'mon' in chosen_filters:
+                print("Month selected")
+                month_number, month_name = get_month()
+                day_number, day_name = 'None chosen', 'None chosen'
+                break
+            elif 'day' in chosen_filters:
+                print("Day selected")
+                day_number, day_name = get_day()
+                month_number, month_name = 'None chosen', 'None chosen'
+                break
+            elif 'both' in chosen_filters:
+                print("Both selected")
+                month_number, month_name = get_month()
+                day_number, day_name = get_day()
+                break
+            else:
+                print("No filters recognised, options are 'month', 'day' or 'both'")
+                continue
+
+        #todo: does it need to handle no filters?
+        except:
+            print("No filters recognised, options are 'month', 'day' or 'both'")
+            continue
 
     print('-'*40)
     user_filters = {
@@ -187,7 +225,7 @@ def get_filters():
     }
     return user_filters
 
-
+# todo: type annotations
 def load_data(user_filters):
     """
     Loads data for the specified city and filters by month and day if applicable.
@@ -200,54 +238,73 @@ def load_data(user_filters):
         df - Pandas DataFrame containing city data filtered by month and day
     """
     df = pd.read_csv(DATAPATH + CITY_DATA[user_filters['city']])
+
     #print(type(df['Start Time'][0]))
     df['Start Time'] = pd.to_datetime(df['Start Time'])
     #print(type(df['Start Time'][0]))
     df['End Time'] = pd.to_datetime(df['End Time'])
 
     df['month'] = df['Start Time'].dt.month
+    # Confirm that the chosen month exists in the data:
+    # todo: this doesn't work if both and a non-existent month chosen?
+    if 'None chosen' not in user_filters['month_name']:
+        if user_filters['month_number'] not in df['month']:
+            print(f"{user_filters['city']} data contains no entries for {user_filters['month_name']}")
+            df.sort_values(by='month', inplace=True)
+            available_month_numbers = df['month'].unique()
+            available_month_names = []
+            for month in available_month_numbers:
+                available_month_names.append(MONTHNAMES[month-1])
+            print(f"Data contains: {available_month_names}")
+            user_filters['month_number'], user_filters['month_name'] = get_month(available_month_names)
+
+    # Create additional required dataframe columns
     df['day_of_week'] = df['Start Time'].dt.weekday
     df['start_hour'] = df['Start Time'].dt.hour
     df['journey'] = df['Start Station']+df['End Station']
     df['Journey Time'] = df['End Time'] - df['Start Time']
 
-    print(f"{df['month'][0]}, {type(df['month'][0])}")
-    print(f"{user_filters['month_number']}, {type(user_filters['month_number'])}")
+    #print(f"{df['month'][0]}, {type(df['month'][0])}")
+    #print(f"{user_filters['month_number']}, {type(user_filters['month_number'])}")
 
-    #df = df[df["month"] == user_filters['month_number']]
-    #df = df[df["day_of_week"] == user_filters['day_number']-1]
+    # Then filter by chosen user filters if applicable:
+    if 'None chosen' not in user_filters['month_name']:
+        df = df[df["month"] == user_filters['month_number']]
+    if 'None chosen' not in user_filters['day_name']:
+        df = df[df["day_of_week"] == user_filters['day_number']-1]
+    return df, user_filters
 
-    return df
-
-
+# todo: type annotations
 def time_stats(df, user_filters):
     """Displays statistics on the most frequent times of travel."""
     print('\nCalculating The Most Frequent Times of Travel for your chosen filters...\n'
           'Chosen Filters:\n'
-          f'City - {user_filters["city"]}\n'
-          f'Month - {user_filters["month_name"]}\n'
-          f'Day of the week - {user_filters["day_name"]}\n'
+          f'City - {user_filters["city"].title()}\n'
+          f'Month - {user_filters["month_name"].capitalize()}\n'
+          f'Day of the week - {user_filters["day_name"].capitalize()}\n'
           )
     start_time = time.time()
     stats = df.describe()
 
-    # TODO:intelligently show/don't show when filtered (but check rubric for requirements)
-    # display the most common month
-    common_month = int(df.mode()['month'][0])
-    print(f"The most common month in the filtered data is {MONTHNAMES[common_month-1]}")
+    if 'None chosen' in user_filters['month_name']:
+        # display the most common month
+        common_month = int(df.mode()['month'][0])
+        print(f"Most popular month: {MONTHNAMES[common_month-1]}")
 
-    # display the most common day of week
-    common_day = int(df.mode()['day_of_week'][0])
-    print(f"The most popular day of the week in the filtered data is {WEEKDAYS[common_day - 1]}")
+    if 'None chosen' in user_filters['day_name']:
+        # display the most common day of week
+        common_day = int(df.mode()['day_of_week'][0])
+        print(f"Most popular day: {WEEKDAYS[common_day - 1]}")
 
     # display the most common start hour
     common_hour = int(df.mode()['start_hour'][0])
-    print(f"The most popular hour in the filtered data is {common_hour}")
+    print(f"Most popular hour: {common_hour}")
 
+    #todo: round these numbers to something sensible
     print("\nThis took %s seconds." % (time.time() - start_time))
     print('-'*40)
 
-
+# todo: take out unused user_filters or use them
 def station_stats(df, user_filters):
     """Displays statistics on the most popular stations and trip."""
 
@@ -264,12 +321,13 @@ def station_stats(df, user_filters):
 
     # display most frequent combination of start station and end station trip
     common_journey = df.mode()['journey'][0]
-    print(f"The most popular journey (station combo) in the filtered data is {common_journey}")
+    print(f"The most popular journey in the filtered data is {common_journey}")
 
+    #todo: round these numbers to something sensible
     print("\nThis took %s seconds." % (time.time() - start_time))
     print('-'*40)
 
-
+# todo: take out unused user_filters or use them
 def trip_duration_stats(df, user_filters):
     """Displays statistics on the total and average trip duration."""
 
@@ -284,10 +342,12 @@ def trip_duration_stats(df, user_filters):
     mean_travel_time = df["Journey Time"].mean()
     print(f"The mean travel time for the filtered data is {mean_travel_time}")
 
+    #todo: round these numbers to something sensible
     print("\nThis took %s seconds." % (time.time() - start_time))
     print('-'*40)
 
-
+# todo: take out unused user_filters or use them
+# todo: type annotations
 def user_stats(df, user_filters):
     """Displays statistics on bikeshare users."""
 
@@ -298,20 +358,30 @@ def user_stats(df, user_filters):
     #user_type_describe = df["User Type"].describe()
     #print(user_type_describe)
     user_type_counts = df["User Type"].value_counts()
-    print(user_type_counts)
+    print(f"Subscriber: {user_type_counts['Subscriber']}")
+    print(f"Customer: {user_type_counts['Customer']}")
 
     # Display counts of gender
-    gender_type_counts = df["Gender"].value_counts()
-    print(gender_type_counts)
+    if "Gender"in df:
+        gender_type_counts = df["Gender"].value_counts()
+        #print(gender_type_counts)
+        print(f"Male: {gender_type_counts['Male']}")
+        print(f"Female: {gender_type_counts['Female']}")
+    else:
+        print("No gender data in the city data chosen")
 
     # Display earliest, most recent, and most common year of birth
-    earliest_dob = df["Birth Year"].min()
-    print(earliest_dob)
-    latest_dob = df["Birth Year"].max()
-    print(latest_dob)
-    common_dob = df.mode()["Birth Year"][0]
-    print(common_dob)
+    if "Birth Year" in df:
+        earliest_dob = df["Birth Year"].min()
+        print(f"Earliest birth year: {earliest_dob}")
+        latest_dob = df["Birth Year"].max()
+        print(f"Latest birth year: {latest_dob}")
+        common_dob = df.mode()["Birth Year"][0]
+        print(f"Most common birth year: {common_dob}")
+    else:
+        print("No Birth Year data in the city data chosen")
 
+    #todo: round these numbers to something sensible
     print("\nThis took %s seconds." % (time.time() - start_time))
     print('-'*40)
 
@@ -324,7 +394,7 @@ def main():
         # month_number = int(1)
         # month_name = 'january'
         # day = 'monday'
-        df = load_data(user_filters)
+        df, user_filters = load_data(user_filters)
 
         time_stats(df, user_filters)
         station_stats(df, user_filters)
@@ -332,24 +402,30 @@ def main():
         user_stats(df, user_filters)
 
         display_filtered_data = input('\nWould you like to view your filtered data 5 lines at a time?\n'
-                                 "(Sounds like a boring way to view it, but I won't stop you!\n"
+                                 "(Sounds like a tedious way to view it, but I won't stop you!\n"
                         'Enter yes or no.\n')
-        if display_filtered_data.lower() != 'yes':
+        if display_filtered_data.lower() == 'yes':
             # TODO: make this 5 lines at a time, rather than just head
+            # remember to loop
+            # needs to handle typos
             print(df.head())
 
         display_raw_data = input('\nWould you like to view the whole dataset for your chosen city 5 lines at a time?\n'
-                                 "(Sounds like a really boring way to view it, but I won't stop you! ;-)  )\n"
+                                 "(Sounds like a really tedious way to view it, but I won't stop you! ;-)  )\n"
                         'Enter yes or no.\n')
-        if display_raw_data.lower() != 'yes':
+        if display_raw_data.lower() == 'yes':
             # TODO: make this 5 lines at a time, rather than just head
+            # remember to loop
+            # needs to handle typos
             raw_df = pd.read_csv(CITY_DATA[user_filters['city']])
             print(raw_df.head())
 
         restart = input('\nWould you like to restart to choose different filter options?\n'
                         'Enter yes or no.\n')
-        if restart.lower() != 'yes':
+        if 'y' not in restart.lower():
             break
+        continue
+
 
 
 if __name__ == "__main__":
