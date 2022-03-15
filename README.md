@@ -4,7 +4,7 @@ From Udacity:
 
 # Useful reference notes:
 
-[User Input](https://stackoverflow.com/questions/23294658/asking-the-user-for-input-until-they-give-a-valid-response)
+[Stack Overflow - User Input](https://stackoverflow.com/questions/23294658/asking-the-user-for-input-until-they-give-a-valid-response)
 
 ## Date & Time:
 [Real Python - datetime](https://realpython.com/python-datetime/)
@@ -18,6 +18,7 @@ From Udacity:
 
 ## Pandas quick reference:
 [10mins to Pandas](https://pandas.pydata.org/pandas-docs/stable/user_guide/10min.html)
+[Pandas Pretty Print](https://www.stackvidhya.com/pretty-print-dataframe/#:~:text=You%20can%20use%20the%20print,which%20will%20print%20the%20dataframe.)
 
 ## regex:
 [Tool for checking regex](https://pythex.org/)
@@ -26,11 +27,18 @@ or maybe more simply:
 [parse search](https://realpython.com/python-packages/#parse-for-matching-strings)
 
 ## Removing braces displayed in fstrings:
-[Stack Overflow](https://stackoverflow.com/questions/42756537/f-string-syntax-for-unpacking-a-list-with-brace-suppression)
+[Stack Overflow - f-string-syntax](https://stackoverflow.com/questions/42756537/f-string-syntax-for-unpacking-a-list-with-brace-suppression)
 
 ## Type annotations etc:
 [Real Python - Type Checking](https://realpython.com/python-type-checking/)
 
 ## Other
-During the lessons, this came in handy to fix Jupyter notebook environments
-[Stack Overflow](https://stackoverflow.com/questions/39604271/conda-environments-not-showing-up-in-jupyter-notebook)
+During the lessons, this came in handy to fix Jupyter notebook environments:
+
+[Stack Overflow - conda-environments-not-showing-up-in-jupyter-notebook](https://stackoverflow.com/questions/39604271/conda-environments-not-showing-up-in-jupyter-notebook)
+
+
+Setting up pre-commit was useful for keeping an eye on code style:
+
+[pre-commit](https://pre-commit.com/)
+[Configuring precommit hooks](https://rednafi.github.io/digressions/python/2020/04/06/python-precommit.html)

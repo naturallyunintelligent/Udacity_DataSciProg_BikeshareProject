@@ -140,7 +140,9 @@ def get_month(monthnames=MONTHNAMES) -> (int, str):
                     "e.g. January"
                 )
                 continue
-
+            if chosen_month == "all":
+                month_number, month_name = "All", "All"
+                break
             abb_monthnames = [name.lower()[:3] for name in monthnames]
             # lowercase_monthnames = [name.lower() for name in MONTHNAMES]
 
@@ -174,8 +176,9 @@ def get_month(monthnames=MONTHNAMES) -> (int, str):
             print("Keyboard Interrupt - no input taken")
             break
 
-    month_number = chosen_month.month
-    month_name = MONTHNAMES[month_number - 1]
+    if chosen_month != "all":
+        month_number = chosen_month.month
+        month_name = MONTHNAMES[month_number - 1]
 
     print(
         f"Month selected: "
@@ -189,13 +192,18 @@ def get_month(monthnames=MONTHNAMES) -> (int, str):
 def get_day() -> (int, str):
     """
     Takes input from the user to choose a day to analyse
-    :return day_number: an integer to represent the day of the week
+    :returns
+        (int) day_number: an integer to represent the day of the week
+        (str) day_name: the chosen day of the week
     """
     # get user input for day of week (all, monday, tuesday, ... sunday)
     while True:
         try:
             chosen_day = str(input("\nWhich day would you like to analyse?\n")).lower()
             if chosen_day[:3] in [day.lower()[:3] for day in WEEKDAYS]:
+                break
+            if chosen_day == "all":
+                day_number, day_name = "All", "All"
                 break
             else:
                 print(
@@ -224,9 +232,10 @@ def get_day() -> (int, str):
             # TODO: should this actually be some kind of total exit?
             break
 
-    day_index = [day.lower()[:3] for day in WEEKDAYS].index(chosen_day[:3])
-    day_number = day_index + 1
-    day_name = WEEKDAYS[day_index]
+    if chosen_day != "all":
+        day_index = [day.lower()[:3] for day in WEEKDAYS].index(chosen_day[:3])
+        day_number = day_index + 1
+        day_name = WEEKDAYS[day_index]
     print(f"Day selected: {day_name.capitalize()}, (weekday: {day_number})")
     return day_number, day_name
 
@@ -236,11 +245,12 @@ def get_filters() -> dict:
     Asks user to specify a city, month, and day to analyze.
 
     Returns:
-        (str) city - name of the city to analyze
-        (str) month - name of the month to filter by,
-            or "all" to apply no month filter
-        (str) day - name of the day of week to filter by,
-            or "all" to apply no day filter
+        (dict) user_filters, which contains:
+            (str) city - name of the city to analyze
+            (str) month - name of the month to filter by,
+                or "all" to apply no month filter
+            (str) day - name of the day of week to filter by,
+                or "all" to apply no day filter
     """
 
     city = get_city()
@@ -253,12 +263,12 @@ def get_filters() -> dict:
             if "mon" in chosen_filters:
                 print("Month selected")
                 month_number, month_name = get_month()
-                day_number, day_name = "None chosen", "None chosen"
+                day_number, day_name = "All", "All"
                 break
             elif "day" in chosen_filters:
                 print("Day selected")
                 day_number, day_name = get_day()
-                month_number, month_name = "None chosen", "None chosen"
+                month_number, month_name = "All", "All"
                 break
             elif "both" in chosen_filters:
                 print("Both selected")
@@ -326,7 +336,7 @@ def load_data(user_filters):
     df["month"] = df["Start Time"].dt.month
     # Confirm that the chosen month exists in the data:
     # todo: this doesn't work if both and a non-existent month chosen?
-    if "None chosen" not in user_filters["month_name"]:
+    if "All" not in user_filters["month_name"]:
 
         if user_filters["month_number"] not in df["month"].values:
             print(
@@ -354,9 +364,9 @@ def load_data(user_filters):
     #   {type(user_filters['month_number'])}")
 
     # Then filter by chosen user filters if applicable:
-    if "None chosen" not in user_filters["month_name"]:
+    if "All" not in user_filters["month_name"]:
         df = df[df["month"] == user_filters["month_number"]]
-    if "None chosen" not in user_filters["day_name"]:
+    if "All" not in user_filters["day_name"]:
         df = df[df["day_of_week"] == user_filters["day_number"] - 1]
     return df, user_filters
 
@@ -376,12 +386,12 @@ def time_stats(df, user_filters):
     # TODO: remove all commented code before submitting
     # stats = df.describe()
 
-    if "None chosen" in user_filters["month_name"]:
+    if "All" in user_filters["month_name"]:
         # display the most common month
         common_month = int(df.mode()["month"][0])
         print(f"Most popular month: {MONTHNAMES[common_month-1]}")
 
-    if "None chosen" in user_filters["day_name"]:
+    if "All" in user_filters["day_name"]:
         # display the most common day of week
         common_day = int(df.mode()["day_of_week"][0])
         print(f"Most popular day: {WEEKDAYS[common_day - 1]}")
@@ -484,6 +494,42 @@ def user_stats(df, user_filters):
     print("-" * 40)
 
 
+def display_data(df, dataset_type: str):
+    """
+    Function which displays the dataframe 5 lines at a time on the users request
+    """
+    pd.set_option("display.max_rows", None)
+    pd.set_option("display.max_columns", None)
+    pd.set_option("display.width", 1000)
+    pd.set_option("display.colheader_justify", "center")
+    pd.set_option("display.precision", 3)
+
+    row = 0
+    while True:
+        try:
+            display_data = input(
+                f"\nWould you like to view the {dataset_type} data 5 lines at a time?\n"
+                "(Sounds like a tedious way to view it, but I won't stop you!)\n"
+                "Enter yes to see the next 5 rows of data "
+                "(anything else continues without viewing).\n"
+            )
+            if display_data.lower() == "yes":
+                print(df[row : row + 5])
+                row += 5
+                continue
+            else:
+                break
+        except TypeError:
+            print("TypeError... " "Continuing without viewing data")
+            break
+        except ValueError:
+            print("ValueError... " "Continuing without viewing data")
+            break
+        except KeyboardInterrupt:
+            print("Keyboard Interrupt..." "Continuing without viewing data")
+            break
+
+
 def main():
     greeting()
     while True:
@@ -498,35 +544,16 @@ def main():
         station_stats(df, user_filters)
         trip_duration_stats(df, user_filters)
         user_stats(df, user_filters)
+        # additional option to view filtered data
+        display_data(df, "filtered")
 
-        display_filtered_data = input(
-            "\nWould you like to view your filtered data 5 lines at a time?\n"
-            "(Sounds like a tedious way to view it, but I won't stop you!\n"
-            "Enter yes or no.\n"
-        )
-        if display_filtered_data.lower() == "yes":
-            # TODO: make this 5 lines at a time, rather than just head
-            # remember to loop
-            # needs to handle typos
-            print(df.head())
-
-        display_raw_data = input(
-            "\nWould you like to view the whole dataset for your chosen city "
-            "5 lines at a time?\n"
-            "(Sounds like a really tedious way to view it, "
-            "but I won't stop you! ;-)  )\n"
-            "Enter yes or no.\n"
-        )
-        if display_raw_data.lower() == "yes":
-            # TODO: make this 5 lines at a time, rather than just head
-            # remember to loop
-            # needs to handle typos
-            raw_df = pd.read_csv(CITY_DATA[user_filters["city"]])
-            print(raw_df.head())
+        # option to view whole raw dataset
+        raw_df = pd.read_csv(DATAPATH + CITY_DATA[user_filters["city"]])
+        display_data(raw_df, "raw")
 
         restart = input(
             "\nWould you like to restart to choose different filter options?\n"
-            "Enter yes or no.\n"
+            "Enter yes to restart, anything else exits.\n"
         )
         if "y" not in restart.lower():
             break
