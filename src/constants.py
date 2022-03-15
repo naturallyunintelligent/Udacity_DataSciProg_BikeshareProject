@@ -6,7 +6,7 @@ CITY_DATA = {
     'washington': 'washington.csv'
 }
 
-WEEKDAYS = [
+WEEKDAYS = (
     'Monday',
     'Tuesday',
     'Wednesday',
@@ -14,9 +14,9 @@ WEEKDAYS = [
     'Friday',
     'Saturday',
     'Sunday',
-]
+)
 
-MONTHNAMES = [
+MONTHNAMES = (
         'January',
         'February',
         'March',
@@ -29,4 +29,4 @@ MONTHNAMES = [
         'October',
         'November',
         'December',
-]
+)

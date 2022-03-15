@@ -10,8 +10,6 @@ from constants import CITY_DATA
 from constants import MONTHNAMES
 from constants import WEEKDAYS
 
-# TODO: change weekdays and months in constants to tuples
-
 # TODO: regex useful in user inputs &/or typos?
 # https://getpocket.com/read/2965365121
 # regex 101?
