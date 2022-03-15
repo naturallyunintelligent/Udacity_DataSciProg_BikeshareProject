@@ -10,11 +10,12 @@ from constants import CITY_DATA
 from constants import MONTHNAMES
 from constants import WEEKDAYS
 
-# TODO: cahnge weekdays and months in constants to tuples
+# TODO: change weekdays and months in constants to tuples
 
-# TODO: regex in user inputs &/or typos?
+# TODO: regex useful in user inputs &/or typos?
 # https://getpocket.com/read/2965365121
 # regex 101?
+# https://ryanstutorials.net/regular-expressions-tutorial/
 # TODO: lookup Rich and Textual, re improving the terminal UI
 # https://github.com/Textualize/textual
 # https://rich.readthedocs.io/en/stable/introduction.html
