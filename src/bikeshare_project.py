@@ -1,23 +1,9 @@
 import datetime
-
-# import re
 import time
 
-# import numpy as np
 import pandas as pd
 
 from constants import CITY_DATA, DATAPATH, MONTHNAMES, WEEKDAYS
-
-# from parse import *
-
-
-# TODO: regex useful in user inputs &/or typos?
-# https://getpocket.com/read/2965365121
-# regex 101?
-# https://ryanstutorials.net/regular-expressions-tutorial/
-# TODO: lookup Rich and Textual, re improving the terminal UI
-# https://github.com/Textualize/textual
-# https://rich.readthedocs.io/en/stable/introduction.html
 
 
 def greeting() -> None:
@@ -111,13 +97,21 @@ def get_city() -> str:
                     f"{available_cities,}"
                 )
                 continue
-        #
         except ValueError:
             print(
                 f"Apologies, I didn't understand that. "
                 f"Data currently available for {available_cities,}"
             )
             continue
+        except TypeError:
+            print(
+                f"Apologies, I didn't understand that. "
+                f"Data currently available for {available_cities,}"
+            )
+            continue
+        except KeyboardInterrupt:
+            print("Keyboard Interrupt... Exiting.")
+            quit()
         else:
             break
     print(f"City selected: {city.title()}")
@@ -174,6 +168,7 @@ def get_month(monthnames=MONTHNAMES) -> (int, str):
             continue
         except KeyboardInterrupt:
             print("Keyboard Interrupt - no input taken")
+            month_number, month_name = "All", "All"
             break
 
     if chosen_month != "all":
@@ -229,7 +224,7 @@ def get_day() -> (int, str):
             continue
         except KeyboardInterrupt:
             print("Keyboard Interrupt - no input taken")
-            # TODO: should this actually be some kind of total exit?
+            day_number, day_name = "All", "All"
             break
 
     if chosen_day != "all":

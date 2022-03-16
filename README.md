@@ -42,3 +42,15 @@ Setting up pre-commit was useful for keeping an eye on code style:
 
 [pre-commit](https://pre-commit.com/)
 [Configuring precommit hooks](https://rednafi.github.io/digressions/python/2020/04/06/python-precommit.html)
+
+
+Useful for similar future projects:
+# from parse import *
+
+# TODO: regex useful in user inputs &/or typos?
+# https://getpocket.com/read/2965365121
+# regex 101?
+# https://ryanstutorials.net/regular-expressions-tutorial/
+# TODO: lookup Rich and Textual, re improving the terminal UI
+# https://github.com/Textualize/textual
+# https://rich.readthedocs.io/en/stable/introduction.html
